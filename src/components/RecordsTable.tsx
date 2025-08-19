@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -9,6 +9,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type RowSelectionState,
   type SortingState,
   useReactTable,
   type VisibilityState,
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/table";
 import type { Record } from "@/utils/types";
 import RecordsContext from "@/context/RecordsContext";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import axios from "axios";
+import { loadRecords } from "@/backend/load";
 
 const columns: ColumnDef<Record>[] = [
   {
@@ -64,7 +68,9 @@ const columns: ColumnDef<Record>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("OriginUrl")}</div>
+    cell: ({ row }) => (
+      <div className="lowercase">{row.getValue("OriginUrl")}</div>
+    ),
   },
 
   {
@@ -72,30 +78,26 @@ const columns: ColumnDef<Record>[] = [
     header: "Shortened Url",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("ShortenedUrl")}</div>
-    )
-  }
+    ),
+  },
 ];
 
-
 export default function RecordsTable() {
-  const context = useContext(RecordsContext)
+  const context = useContext(RecordsContext);
 
   if (!context) {
-    throw new Error("no records context")
+    throw new Error("no records context");
   }
 
-  const { recs, } = context 
+  const { recs, setRecs, setAlertMessage } = context;
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const table = useReactTable({
-    data: recs,
+    data: Array.isArray(recs) ? recs : [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -113,6 +115,24 @@ export default function RecordsTable() {
     },
   });
 
+  const handleOnClick = () => {
+    for (const row of table.getSelectedRowModel().rows) {
+      const rec = row.original; 
+
+      axios.delete("http://localhost:8080/records", {
+        params: {
+          origin_url: rec.OriginUrl,
+        }
+      })
+        .then(_ => {
+          loadRecords(setRecs)
+        })
+        .catch(err => {
+          setAlertMessage(err.response.data)
+        })
+    }
+    table.setRowSelection({})
+  }
   return (
     <div className="w-full">
       <div className="overflow-hidden rounded-md border">
@@ -177,7 +197,7 @@ export default function RecordsTable() {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            <ChevronLeft />
           </Button>
           <Button
             variant="outline"
@@ -185,7 +205,15 @@ export default function RecordsTable() {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            <ChevronRight />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleOnClick}
+            disabled={table.getSelectedRowModel().rows.length === 0}
+          >
+            Delete
           </Button>
         </div>
       </div>

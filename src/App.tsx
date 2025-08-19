@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./styles/App.css";
 import ShortenUrlForm from "./components/ShortenUrlForm";
-// import { RecordsTable } from "./components/deprecated/RecordsTable";
-// import { loadRecords } from "./backend/load";
 import RecordsContext from "./context/RecordsContext";
 import type { Record } from "./utils/types";
 import { loadRecords } from "./backend/load";
@@ -18,10 +16,6 @@ function App() {
   const [alertMessage, setAlertMessage] = useState("")
   const alertRef = useRef<HTMLButtonElement>(null)
 
-
-  // alert показывается только если возникает какая-то ошибка
-  // когда ошибок нет alertMessage - пустая строка, в противном случае 
-  // каждая ошибка на беке сопровождается сообщением, которое хранится в alertMessage
   useEffect(() => {
     if (!alertMessage) return 
 

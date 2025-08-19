@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  // AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -10,8 +9,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-// import RecordsContext from "@/context/RecordsContext"
-// import { useContext } from "react"
+import RecordsContext from "@/context/RecordsContext"
+import { useContext } from "react"
 
 interface AlertProps {
   message: string,
@@ -19,9 +18,15 @@ interface AlertProps {
 }
 
 export default function Alert({ message, ref }: AlertProps) {
+  const context = useContext(RecordsContext)
 
+  if (!context) {
+    throw new Error("no records context")
+  }
+
+  const { setAlertMessage } = context
   return (
-    <AlertDialog>
+    <AlertDialog onOpenChange={open => !open && setAlertMessage("")}>
       <AlertDialogTrigger asChild className="invisible" ref={ref}>
         <Button variant="outline">Показать</Button>
       </AlertDialogTrigger>
@@ -34,7 +39,6 @@ export default function Alert({ message, ref }: AlertProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Отмена</AlertDialogCancel>
-          {/* <AlertDialogAction>Continue</AlertDialogAction> */}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

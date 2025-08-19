@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-// import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,9 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  // FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// import { handleOnChange } from "@/utils/handlers";
 import axios from "axios";
 import { loadRecords } from "@/backend/load";
 import { useContext } from "react";
@@ -61,14 +58,6 @@ export default function ShortenUrlForm({ url, setUrl }: ShortenUrlFormProps) {
       .catch((err) => {
         setAlertMessage(err.response.data)
       });
-
-    // toast("You submitted the following values", {
-    //   description: (
-    //     <pre className="mt-2 w-[320px] rounded-md bg-neutral-950 p-4">
-    //       <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-    //     </pre>
-    //   ),
-    // });
   }
 
   return (
@@ -79,7 +68,6 @@ export default function ShortenUrlForm({ url, setUrl }: ShortenUrlFormProps) {
           name="url"
           render={({ field }) => (
             <FormItem>
-              {/* <FormLabel>URL</FormLabel> */}
               <FormControl>
                 <Input
                   placeholder="URL"
@@ -90,7 +78,6 @@ export default function ShortenUrlForm({ url, setUrl }: ShortenUrlFormProps) {
                     setUrl(newUrl)
                     field.onChange(event)
                   }}
-                  // style={{ padding: "10px", }}
                 />
               </FormControl>
               <FormDescription>
