@@ -51,9 +51,9 @@ export default function ShortenUrlForm({ url, setUrl }: ShortenUrlFormProps) {
       .post("http://localhost:8080/records", {
         URL: data.url,
       })
-      .then((res) => {
-        console.log(res);
-        loadRecords(setRecs)
+      .then((_) => {
+        console.log(_);
+        loadRecords().then(setRecs).catch(err => setAlertMessage(err.response?.data || "Ошибка загрузки данных с базы данных"));
       })
       .catch((err) => {
         setAlertMessage(err.response.data)

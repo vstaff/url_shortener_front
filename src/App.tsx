@@ -10,17 +10,19 @@ import Alert from "./components/Alert";
 function App() {
   const [url, setUrl] = useState("");
   const [recs, setRecs] = useState<Record[]>([]);
+
+  const [alertMessage, setAlertMessage] = useState("");
+  const alertRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    loadRecords(setRecs);
+    if (alertMessage) alertRef.current?.click();
+  }, [alertMessage]);
+
+  useEffect(() => {
+    loadRecords()
+      .then(setRecs)
+      .catch((err) => setAlertMessage(err.response?.data || "Ошибка загрузки записей с базы данных"));
   }, []);
-  const [alertMessage, setAlertMessage] = useState("")
-  const alertRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    if (!alertMessage) return 
-
-    alertRef.current?.click()
-  }, [alertMessage])
   return (
     <div id="app">
       <main className="flex flex-col justify-center items-center gap-y-10 w-[40%] h-[100dvh]">
@@ -29,7 +31,6 @@ function App() {
           <RecordsTable />
           <Alert message={alertMessage} ref={alertRef} />
         </RecordsContext.Provider>
-
       </main>
     </div>
   );

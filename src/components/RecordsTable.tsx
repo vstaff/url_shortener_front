@@ -97,7 +97,7 @@ export default function RecordsTable() {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const table = useReactTable({
-    data: Array.isArray(recs) ? recs : [],
+    data: recs,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -115,24 +115,52 @@ export default function RecordsTable() {
     },
   });
 
-  const handleOnClick = () => {
-    for (const row of table.getSelectedRowModel().rows) {
-      const rec = row.original; 
+  const handleOnClick = async () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    const originUrls = selectedRows.map(row => row.original.OriginUrl);
 
-      axios.delete("http://localhost:8080/records", {
-        params: {
-          origin_url: rec.OriginUrl,
-        }
-      })
-        .then(_ => {
-          loadRecords(setRecs)
+    try {
+      await Promise.all(originUrls.map(url => (
+        axios.delete("http://localhost:8080/records", {
+          params: {
+            origin_url: url 
+          }
         })
-        .catch(err => {
-          setAlertMessage(err.response.data)
-        })
+      )))
+
+      const data = await loadRecords();
+      setRecs(Array.isArray(data) ? data : [])
+      table.setRowSelection({})
+    } catch (err: any) {
+      setAlertMessage(err.response.data)
     }
-    table.setRowSelection({})
   }
+
+  // const handleOnClick = () => {
+  //   for (const row of table.getSelectedRowModel().rows) {
+  //     const rec = row.original;
+
+  //     axios
+  //       .delete("http://localhost:8080/records", {
+  //         params: {
+  //           origin_url: rec.OriginUrl,
+  //         },
+  //       })
+  //       .then((_) => {
+  //         loadRecords()
+  //           .then(setRecs)
+  //           .catch((err) =>
+  //             setAlertMessage(
+  //               err.response?.data || "Ошибка загрузки данных с базы данных"
+  //             )
+  //           );
+  //       })
+  //       .catch((err) => {
+  //         setAlertMessage(err.response.data);
+  //       });
+  //   }
+  //   table.setRowSelection({});
+  // };
   return (
     <div className="w-full">
       <div className="overflow-hidden rounded-md border">
@@ -156,7 +184,7 @@ export default function RecordsTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table?.getRowModel()?.rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -187,8 +215,8 @@ export default function RecordsTable() {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table?.getFilteredSelectedRowModel()?.rows?.length} of{" "}
+          {table?.getFilteredRowModel()?.rows?.length} row(s) selected.
         </div>
         <div className="space-x-2">
           <Button
@@ -211,7 +239,7 @@ export default function RecordsTable() {
             variant="outline"
             size="sm"
             onClick={handleOnClick}
-            disabled={table.getSelectedRowModel().rows.length === 0}
+            disabled={table?.getSelectedRowModel()?.rows?.length === 0}
           >
             Delete
           </Button>
